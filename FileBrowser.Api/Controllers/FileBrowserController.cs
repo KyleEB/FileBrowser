@@ -190,5 +190,53 @@ namespace FileBrowser.Api.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
+        /// <summary>
+        /// Create a new directory
+        /// </summary>
+        /// <param name="request">Directory creation request</param>
+        /// <returns>Creation result</returns>
+        [HttpPost("create-directory")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult> CreateDirectory([FromBody] Contracts.Models.CreateDirectoryRequest request)
+        {
+            try
+            {
+                var directoryPath = string.IsNullOrEmpty(request.ParentPath) 
+                    ? request.Name 
+                    : Path.Combine(request.ParentPath, request.Name).Replace('\\', '/');
+                
+                await _fileSystemService.CreateDirectoryAsync(directoryPath);
+                
+                return Ok(new { message = "Directory created successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Move a file or directory
+        /// </summary>
+        /// <param name="request">Move request</param>
+        /// <returns>Move result</returns>
+        [HttpPost("move")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult> Move([FromBody] Contracts.Models.MoveRequest request)
+        {
+            try
+            {
+                await _fileSystemService.MoveAsync(request.SourcePath, request.DestinationPath);
+                
+                return Ok(new { message = "Item moved successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
     }
 }

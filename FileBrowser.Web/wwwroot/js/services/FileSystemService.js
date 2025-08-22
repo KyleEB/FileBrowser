@@ -193,4 +193,60 @@ class FileSystemService {
       throw new Error(`Preview failed: ${error.message}`);
     }
   }
+
+  /**
+   * Create a new directory
+   * @param {string} name - Directory name
+   * @param {string} parentPath - Parent directory path
+   * @returns {Promise<Object>} Creation result
+   */
+  async createDirectory(name, parentPath = "") {
+    try {
+      const request = new CreateDirectoryRequest(name, parentPath);
+
+      const response = await fetch(`${this.apiBaseUrl}/create-directory`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request.toApiRequest()),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw new Error(`Failed to create directory: ${error.message}`);
+    }
+  }
+
+  /**
+   * Move a file or directory
+   * @param {string} sourcePath - Source path
+   * @param {string} destinationPath - Destination path
+   * @returns {Promise<Object>} Move result
+   */
+  async moveItem(sourcePath, destinationPath) {
+    try {
+      const request = new MoveRequest(sourcePath, destinationPath);
+
+      const response = await fetch(`${this.apiBaseUrl}/move`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request.toApiRequest()),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw new Error(`Failed to move item: ${error.message}`);
+    }
+  }
 }

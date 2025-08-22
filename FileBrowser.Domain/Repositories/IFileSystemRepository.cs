@@ -55,5 +55,20 @@ namespace FileBrowser.Domain.Repositories
         /// <param name="fileStream">The file stream</param>
         /// <returns>Task representing the upload operation</returns>
         Task UploadFileAsync(string filePath, Stream fileStream);
+
+        /// <summary>
+        /// Creates a new directory
+        /// </summary>
+        /// <param name="directoryPath">The directory path to create</param>
+        /// <returns>Task representing the directory creation operation</returns>
+        Task CreateDirectoryAsync(string directoryPath);
+
+        /// <summary>
+        /// Moves a file or directory from source to destination
+        /// </summary>
+        /// <param name="sourcePath">The source path</param>
+        /// <param name="destinationPath">The destination path</param>
+        /// <returns>Task representing the move operation</returns>
+        Task MoveAsync(string sourcePath, string destinationPath);
     }
 }

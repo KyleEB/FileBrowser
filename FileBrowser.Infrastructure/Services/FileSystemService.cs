@@ -51,5 +51,15 @@ namespace FileBrowser.Infrastructure.Services
             
             return HomeDirectoryResult.Create(homeDirectory, exists, errorMessage);
         }
+
+        public async Task CreateDirectoryAsync(string directoryPath)
+        {
+            await _repository.CreateDirectoryAsync(directoryPath);
+        }
+
+        public async Task MoveAsync(string sourcePath, string destinationPath)
+        {
+            await _repository.MoveAsync(sourcePath, destinationPath);
+        }
     }
 }

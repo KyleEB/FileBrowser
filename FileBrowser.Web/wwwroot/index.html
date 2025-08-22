@@ -48,6 +48,13 @@
             >
               <i class="fas fa-upload"></i> Upload File
             </button>
+            <button
+              id="newFolderBtn"
+              class="btn btn-secondary"
+              title="Create a new folder"
+            >
+              <i class="fas fa-folder-plus"></i> New Folder
+            </button>
             <input
               type="file"
               id="fileInput"
@@ -100,6 +107,14 @@
           </div>
 
           <div id="fileList" class="file-list"></div>
+
+          <!-- Drag and drop help text -->
+          <div id="dragDropHelp" class="drag-drop-help" style="display: none">
+            <p>
+              <i class="fas fa-info-circle"></i> Drag files and folders to move
+              them into other folders
+            </p>
+          </div>
         </div>
       </main>
     </div>
@@ -133,6 +148,8 @@
     <script src="js/models/SearchRequest.js"></script>
     <script src="js/models/UploadResponse.js"></script>
     <script src="js/models/HomeDirectoryResponse.js"></script>
+    <script src="js/models/CreateDirectoryRequest.js"></script>
+    <script src="js/models/MoveRequest.js"></script>
 
     <!-- Service Layer -->
     <script src="js/services/FileSystemService.js"></script>

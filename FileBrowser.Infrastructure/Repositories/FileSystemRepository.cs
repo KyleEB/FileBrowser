@@ -188,6 +188,50 @@ namespace FileBrowser.Infrastructure.Repositories
             await fileStream.CopyToAsync(fileStream2);
         }
 
+        public async Task CreateDirectoryAsync(string directoryPath)
+        {
+            var fullPath = GetFullPath(directoryPath);
+            
+            if (Directory.Exists(fullPath))
+            {
+                throw new InvalidOperationException($"Directory already exists: {directoryPath}");
+            }
+
+            Directory.CreateDirectory(fullPath);
+        }
+
+        public async Task MoveAsync(string sourcePath, string destinationPath)
+        {
+            var fullSourcePath = GetFullPath(sourcePath);
+            var fullDestinationPath = GetFullPath(destinationPath);
+
+            if (!File.Exists(fullSourcePath) && !Directory.Exists(fullSourcePath))
+            {
+                throw new FileNotFoundException($"Source path does not exist: {sourcePath}");
+            }
+
+            if (File.Exists(fullDestinationPath) || Directory.Exists(fullDestinationPath))
+            {
+                throw new InvalidOperationException($"Destination path already exists: {destinationPath}");
+            }
+
+            // Ensure destination directory exists
+            var destinationDir = Path.GetDirectoryName(fullDestinationPath);
+            if (!string.IsNullOrEmpty(destinationDir) && !Directory.Exists(destinationDir))
+            {
+                Directory.CreateDirectory(destinationDir);
+            }
+
+            if (File.Exists(fullSourcePath))
+            {
+                File.Move(fullSourcePath, fullDestinationPath);
+            }
+            else if (Directory.Exists(fullSourcePath))
+            {
+                Directory.Move(fullSourcePath, fullDestinationPath);
+            }
+        }
+
         private void EnsureHomeDirectoryExists()
         {
             if (!Directory.Exists(_homeDirectory))

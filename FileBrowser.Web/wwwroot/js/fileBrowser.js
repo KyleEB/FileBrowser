@@ -9,6 +9,9 @@ class FileBrowser {
     this.navigationService = new NavigationService();
     this.eventService = new EventService(this);
 
+    // Drag and drop state
+    this.isDragging = false;
+
     // Initialize application
     this.initialize();
   }
@@ -314,6 +317,191 @@ class FileBrowser {
     this.navigationService.clearSearchMode();
     this.uiService.setSearchValue("");
     this.navigateToPath(this.navigationService.getCurrentPath());
+  }
+
+  /**
+   * Create a new folder
+   */
+  async createNewFolder() {
+    const folderName = prompt("Enter folder name:");
+    if (!folderName || folderName.trim() === "") {
+      return;
+    }
+
+    const trimmedName = folderName.trim();
+
+    // Basic validation
+    if (trimmedName.includes("/") || trimmedName.includes("\\")) {
+      this.uiService.showError("Folder name cannot contain slashes");
+      return;
+    }
+
+    try {
+      this.uiService.showLoading();
+      await this.fileSystemService.createDirectory(
+        trimmedName,
+        this.navigationService.getCurrentPath()
+      );
+
+      // Refresh the current directory
+      this.navigateToPath(this.navigationService.getCurrentPath());
+      this.uiService.showSuccess(
+        `Folder "${trimmedName}" created successfully`
+      );
+    } catch (error) {
+      this.uiService.showError(error.message);
+    } finally {
+      this.uiService.hideLoading();
+    }
+  }
+
+  /**
+   * Handle drag start event
+   * @param {DragEvent} event - Drag event
+   */
+  handleDragStart(event) {
+    console.log("Drag start detected!"); // Keep this for debugging
+    this.isDragging = true;
+
+    const fileItem = event.target.closest(".file-item");
+    if (!fileItem) {
+      console.log("No file-item found in drag start");
+      return;
+    }
+
+    const path = fileItem.dataset.path;
+    const name = fileItem.dataset.itemName;
+    const type = fileItem.dataset.type;
+
+    console.log("Dragging item:", { path, name, type });
+
+    event.dataTransfer.setData(
+      "text/plain",
+      JSON.stringify({
+        path: path,
+        name: name,
+        type: fileItem.dataset.type,
+      })
+    );
+
+    event.dataTransfer.effectAllowed = "move";
+    fileItem.classList.add("dragging");
+
+    // Show a temporary message that drag is working
+    this.uiService.showSuccess(`Moving: ${name}`);
+
+    // Add a visual indicator to the page
+    const indicator = document.createElement("div");
+    indicator.id = "drag-indicator";
+    indicator.style.cssText = `
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #007bff;
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      z-index: 1000;
+      font-size: 14px;
+    `;
+    indicator.textContent = `Moving: ${name}`;
+    document.body.appendChild(indicator);
+  }
+
+  /**
+   * Handle drag end event
+   * @param {DragEvent} event - Drag event
+   */
+  handleDragEnd(event) {
+    console.log("Drag end event triggered");
+    this.isDragging = false;
+
+    const fileItem = event.target.closest(".file-item");
+    if (fileItem) {
+      fileItem.classList.remove("dragging");
+    }
+
+    // Remove the visual indicator
+    const indicator = document.getElementById("drag-indicator");
+    if (indicator) {
+      indicator.remove();
+    }
+
+    // Clear the dragging flag after a short delay to prevent click events
+    setTimeout(() => {
+      this.isDragging = false;
+    }, 100);
+  }
+
+  /**
+   * Handle drag over event
+   * @param {DragEvent} event - Drag event
+   */
+  handleDragOver(event) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+
+    const targetItem = event.target.closest(".file-item");
+    if (targetItem && targetItem.dataset.type === "1") {
+      targetItem.classList.add("drag-over");
+    }
+  }
+
+  /**
+   * Handle drag leave event
+   * @param {DragEvent} event - Drag event
+   */
+  handleDragLeave(event) {
+    const targetItem = event.target.closest(".file-item");
+    if (targetItem) {
+      targetItem.classList.remove("drag-over");
+    }
+  }
+
+  /**
+   * Handle drop event
+   * @param {DragEvent} event - Drag event
+   */
+  async handleDrop(event) {
+    event.preventDefault();
+
+    const targetItem = event.target.closest(".file-item");
+    if (!targetItem || targetItem.dataset.type !== "1") {
+      return;
+    }
+
+    targetItem.classList.remove("drag-over");
+
+    try {
+      const dragData = JSON.parse(event.dataTransfer.getData("text/plain"));
+
+      const sourcePath = dragData.path;
+      const targetPath = targetItem.dataset.path;
+      const fileName = dragData.name;
+
+      // Calculate destination path
+      const destinationPath = targetPath + "/" + fileName;
+
+      // Confirm the move operation
+      const confirmed = confirm(
+        `Move "${fileName}" to "${targetItem.dataset.itemName}"?`
+      );
+      if (!confirmed) {
+        return;
+      }
+
+      this.uiService.showLoading();
+      await this.fileSystemService.moveItem(sourcePath, destinationPath);
+
+      // Refresh the current directory
+      this.navigateToPath(this.navigationService.getCurrentPath());
+      this.uiService.showSuccess(`"${fileName}" moved successfully`);
+    } catch (error) {
+      console.error("Move failed:", error);
+      this.uiService.showError(error.message);
+    } finally {
+      this.uiService.hideLoading();
+    }
   }
 }
 

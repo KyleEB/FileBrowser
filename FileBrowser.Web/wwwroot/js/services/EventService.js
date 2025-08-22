@@ -16,6 +16,9 @@ class EventService {
     this.bindNavigationEvents();
     this.bindFileItemEvents();
     this.bindDownloadEvents();
+    this.bindNewFolderEvents();
+    this.bindDragAndDropMoveEvents(); // Move this before file upload drag and drop
+    this.bindDragAndDropEvents(); // Add this explicitly
   }
 
   /**
@@ -67,34 +70,6 @@ class EventService {
         fileInput,
       });
     }
-
-    // Add drag and drop support for the content area
-    const contentArea = this.fileBrowser.uiService.elements.fileList.parent();
-
-    contentArea.on("dragover", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      contentArea.addClass("drag-over");
-    });
-
-    contentArea.on("dragleave", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (!contentArea.has(e.relatedTarget).length) {
-        contentArea.removeClass("drag-over");
-      }
-    });
-
-    contentArea.on("drop", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      contentArea.removeClass("drag-over");
-
-      const files = e.originalEvent.dataTransfer.files;
-      if (files.length > 0) {
-        this.fileBrowser.handleMultipleFileUpload(files);
-      }
-    });
   }
 
   /**
@@ -131,6 +106,11 @@ class EventService {
   bindFileItemEvents() {
     // File item click (navigation or preview)
     $(document).on("click", ".file-item", (e) => {
+      // Don't trigger click if we just finished dragging
+      if (this.fileBrowser.isDragging) {
+        return;
+      }
+
       if (!$(e.target).hasClass("btn")) {
         const path = $(e.currentTarget).data("path");
         const type = $(e.currentTarget).data("type");
@@ -214,12 +194,25 @@ class EventService {
 
     // Prevent default drag behaviors
     dropZone.on("dragover dragenter", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      dropZone.addClass("drag-over");
+      // Don't interfere with file item drag and drop
+      if (e.target.closest(".file-item")) {
+        return;
+      }
+
+      // Only handle if we have files being dragged (external files)
+      if (e.originalEvent.dataTransfer.types.includes("Files")) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.addClass("drag-over");
+      }
     });
 
     dropZone.on("dragleave dragend", (e) => {
+      // Don't interfere with file item drag and drop
+      if (e.target.closest(".file-item")) {
+        return;
+      }
+
       e.preventDefault();
       e.stopPropagation();
       dropZone.removeClass("drag-over");
@@ -227,12 +220,17 @@ class EventService {
 
     // Handle drop
     dropZone.on("drop", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      dropZone.removeClass("drag-over");
+      // Don't interfere with file item drag and drop
+      if (e.target.closest(".file-item")) {
+        return;
+      }
 
+      // Only handle if we have files being dropped (external files)
       const files = e.originalEvent.dataTransfer.files;
       if (files.length > 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.removeClass("drag-over");
         this.fileBrowser.handleFileUpload({ target: { files: files } });
       }
     });
@@ -331,5 +329,85 @@ class EventService {
         navigator.clipboard.writeText(path);
         break;
     }
+  }
+
+  /**
+   * Bind new folder button events
+   */
+  bindNewFolderEvents() {
+    this.fileBrowser.uiService.elements.newFolderBtn.on("click", () => {
+      this.fileBrowser.createNewFolder();
+    });
+  }
+
+  /**
+   * Bind drag and drop events for moving files
+   */
+  bindDragAndDropMoveEvents() {
+    console.log("Binding drag and drop events...");
+
+    // Use native event listeners with capture phase for higher priority
+    document.addEventListener(
+      "dragstart",
+      (e) => {
+        const fileItem = e.target.closest(".file-item");
+        if (fileItem) {
+          console.log("Drag start event captured for file item");
+          e.stopPropagation(); // Prevent other handlers from interfering
+          this.fileBrowser.handleDragStart(e);
+        }
+      },
+      true
+    ); // Use capture phase
+
+    document.addEventListener(
+      "dragend",
+      (e) => {
+        const fileItem = e.target.closest(".file-item");
+        if (fileItem) {
+          e.stopPropagation();
+          this.fileBrowser.handleDragEnd(e);
+        }
+      },
+      true
+    );
+
+    document.addEventListener(
+      "dragover",
+      (e) => {
+        const fileItem = e.target.closest(".file-item");
+        if (fileItem) {
+          e.stopPropagation();
+          this.fileBrowser.handleDragOver(e);
+        }
+      },
+      true
+    );
+
+    document.addEventListener(
+      "dragleave",
+      (e) => {
+        const fileItem = e.target.closest(".file-item");
+        if (fileItem) {
+          e.stopPropagation();
+          this.fileBrowser.handleDragLeave(e);
+        }
+      },
+      true
+    );
+
+    document.addEventListener(
+      "drop",
+      (e) => {
+        const fileItem = e.target.closest(".file-item");
+        if (fileItem) {
+          e.stopPropagation();
+          this.fileBrowser.handleDrop(e);
+        }
+      },
+      true
+    );
+
+    console.log("Drag and drop events bound successfully");
   }
 }

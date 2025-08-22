@@ -7,6 +7,7 @@ class UIService {
       searchInput: $("#searchInput"),
       searchBtn: $("#searchBtn"),
       uploadBtn: $("#uploadBtn"),
+      newFolderBtn: $("#newFolderBtn"),
       fileInput: $("#fileInput"),
       breadcrumbContainer: $("#breadcrumbContainer"),
       fileList: $("#fileList"),
@@ -168,6 +169,7 @@ class UIService {
       this.elements.fileList.html(
         '<div class="text-center text-muted">This directory is empty.</div>'
       );
+      $("#dragDropHelp").hide();
       return;
     }
 
@@ -175,6 +177,9 @@ class UIService {
       const fileItem = this.createFileItemHtml(item);
       this.elements.fileList.append(fileItem);
     });
+
+    // Show drag and drop help when there are items
+    $("#dragDropHelp").show();
   }
 
   /**
@@ -232,7 +237,7 @@ class UIService {
     return `
             <div class="file-item" data-path="${item.path}" data-type="${
       item.type
-    }">
+    }" draggable="true" data-item-name="${this.escapeHtml(item.name)}">
                 <div class="file-icon ${iconClass}">
                     <i class="fas ${icon}"></i>
                 </div>

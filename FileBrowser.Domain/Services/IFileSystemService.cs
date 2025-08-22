@@ -9,5 +9,7 @@ namespace FileBrowser.Domain.Services
         Task<Stream> DownloadFileAsync(string filePath);
         Task<UploadResult> UploadFileAsync(FileUpload file, string targetPath);
         Task<HomeDirectoryResult> GetHomeDirectoryAsync();
+        Task CreateDirectoryAsync(string directoryPath);
+        Task MoveAsync(string sourcePath, string destinationPath);
     }
 }
