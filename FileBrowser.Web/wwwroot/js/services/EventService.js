@@ -39,14 +39,61 @@ class EventService {
    * Bind file upload events
    */
   bindFileUploadEvents() {
-    // Upload button click
-    this.fileBrowser.uiService.elements.uploadBtn.on("click", () => {
-      this.fileBrowser.uiService.elements.fileInput.click();
+    // Use native JavaScript for better compatibility with file input
+    const uploadBtn = document.getElementById("uploadBtn");
+    const fileInput = document.getElementById("fileInput");
+
+    if (uploadBtn && fileInput) {
+      console.log("Found upload button and file input elements");
+
+      // Upload button click
+      uploadBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("Upload button clicked");
+
+        // Trigger the file input click
+        fileInput.click();
+      });
+
+      // File input change
+      fileInput.addEventListener("change", (e) => {
+        console.log("File input change event triggered", e.target.files);
+        this.fileBrowser.handleFileUpload(e);
+      });
+    } else {
+      console.error("Upload button or file input not found", {
+        uploadBtn,
+        fileInput,
+      });
+    }
+
+    // Add drag and drop support for the content area
+    const contentArea = this.fileBrowser.uiService.elements.fileList.parent();
+
+    contentArea.on("dragover", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      contentArea.addClass("drag-over");
     });
 
-    // File input change
-    this.fileBrowser.uiService.elements.fileInput.on("change", (e) => {
-      this.fileBrowser.handleFileUpload(e);
+    contentArea.on("dragleave", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!contentArea.has(e.relatedTarget).length) {
+        contentArea.removeClass("drag-over");
+      }
+    });
+
+    contentArea.on("drop", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      contentArea.removeClass("drag-over");
+
+      const files = e.originalEvent.dataTransfer.files;
+      if (files.length > 0) {
+        this.fileBrowser.handleMultipleFileUpload(files);
+      }
     });
   }
 

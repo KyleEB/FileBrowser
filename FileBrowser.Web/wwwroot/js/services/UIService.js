@@ -14,6 +14,9 @@ class UIService {
       searchResultsList: $("#searchResultsList"),
       loadingIndicator: $("#loadingIndicator"),
       errorMessage: $("#errorMessage"),
+      uploadProgress: $("#uploadProgress"),
+      progressFill: $("#uploadProgress .progress-fill"),
+      progressText: $("#uploadProgress .progress-text"),
       previewModal: $("#previewModal"),
       modalTitle: $("#modalTitle"),
       modalContent: $("#modalContent"),
@@ -45,6 +48,56 @@ class UIService {
    */
   showError(message) {
     this.elements.errorMessage.text(message).show();
+  }
+
+  /**
+   * Show success message
+   * @param {string} message - Success message to display
+   */
+  showSuccess(message) {
+    // Create a temporary success message element
+    const successElement = $(
+      `<div class="success-message">${this.escapeHtml(message)}</div>`
+    );
+    this.elements.errorMessage.parent().append(successElement);
+
+    setTimeout(() => {
+      successElement.fadeOut(() => successElement.remove());
+    }, 3000);
+  }
+
+  /**
+   * Show upload progress
+   */
+  showUploadProgress() {
+    this.elements.uploadProgress.show();
+    this.elements.progressFill.css("width", "0%");
+    this.elements.progressText.text("Uploading files...");
+
+    // Disable upload button during upload
+    this.elements.uploadBtn.prop("disabled", true).addClass("uploading");
+  }
+
+  /**
+   * Update upload progress
+   * @param {number} percent - Progress percentage (0-100)
+   * @param {string} text - Progress text
+   */
+  updateUploadProgress(percent, text = null) {
+    this.elements.progressFill.css("width", `${percent}%`);
+    if (text) {
+      this.elements.progressText.text(text);
+    }
+  }
+
+  /**
+   * Hide upload progress
+   */
+  hideUploadProgress() {
+    this.elements.uploadProgress.hide();
+
+    // Re-enable upload button after upload
+    this.elements.uploadBtn.prop("disabled", false).removeClass("uploading");
   }
 
   /**

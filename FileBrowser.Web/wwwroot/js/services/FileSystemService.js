@@ -78,26 +78,47 @@ class FileSystemService {
    * Upload a file
    * @param {File} file - File to upload
    * @param {string} targetPath - Target directory path
+   * @param {Function} onProgress - Progress callback function
    * @returns {Promise<Object>} Upload result
    */
-  async uploadFile(file, targetPath = "") {
+  async uploadFile(file, targetPath = "", onProgress = null) {
     try {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch(
-        `${this.apiBaseUrl}/upload?path=${encodeURIComponent(targetPath)}`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const xhr = new XMLHttpRequest();
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
+      return new Promise((resolve, reject) => {
+        xhr.upload.addEventListener("progress", (e) => {
+          if (e.lengthComputable && onProgress) {
+            const percentComplete = (e.loaded / e.total) * 100;
+            onProgress(percentComplete);
+          }
+        });
 
-      return await response.json();
+        xhr.addEventListener("load", () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const result = JSON.parse(xhr.responseText);
+              resolve(result);
+            } catch (error) {
+              resolve({ success: true, message: "Upload completed" });
+            }
+          } else {
+            reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
+          }
+        });
+
+        xhr.addEventListener("error", () => {
+          reject(new Error("Upload failed"));
+        });
+
+        xhr.open(
+          "POST",
+          `${this.apiBaseUrl}/upload?path=${encodeURIComponent(targetPath)}`
+        );
+        xhr.send(formData);
+      });
     } catch (error) {
       throw new Error(`Upload failed: ${error.message}`);
     }

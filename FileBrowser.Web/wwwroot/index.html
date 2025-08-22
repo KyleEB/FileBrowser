@@ -38,10 +38,19 @@
       <main class="main-content">
         <div class="toolbar">
           <div class="toolbar-left">
-            <button id="uploadBtn" class="btn btn-primary">
+            <button
+              id="uploadBtn"
+              class="btn btn-primary"
+              title="Click to select files for upload or drag and drop files here"
+            >
               <i class="fas fa-upload"></i> Upload File
             </button>
-            <input type="file" id="fileInput" style="display: none" />
+            <input
+              type="file"
+              id="fileInput"
+              style="position: absolute; left: -9999px; opacity: 0"
+              multiple
+            />
           </div>
           <div class="toolbar-right">
             <div class="stats">
@@ -70,6 +79,17 @@
             class="error-message"
             style="display: none"
           ></div>
+
+          <div
+            id="uploadProgress"
+            class="upload-progress"
+            style="display: none"
+          >
+            <div class="progress-bar">
+              <div class="progress-fill"></div>
+            </div>
+            <div class="progress-text">Uploading files...</div>
+          </div>
 
           <div id="searchResults" class="search-results" style="display: none">
             <h3>Search Results</h3>
@@ -110,6 +130,6 @@
     <script src="js/services/EventService.js"></script>
 
     <!-- Main Application -->
-    <script src="js/FileBrowser.js"></script>
+    <script src="js/fileBrowser.js"></script>
   </body>
 </html>

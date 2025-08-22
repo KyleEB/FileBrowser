@@ -4,10 +4,7 @@
 const config = {
   // API Configuration
   api: {
-    baseUrl:
-      process.env.NODE_ENV === "production"
-        ? "http://localhost:5002/api/filebrowser" // Production API URL
-        : "http://localhost:5002/api/filebrowser", // Development API URL
+    baseUrl: "http://localhost:5002/api/filebrowser", // Development API URL
   },
 
   // Application Settings
