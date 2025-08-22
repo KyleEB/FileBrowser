@@ -1,0 +1,149 @@
+/**
+ * File System Service - Handles all file system operations and API communication
+ */
+class FileSystemService {
+    constructor() {
+        this.apiBaseUrl = '/api/filebrowser';
+    }
+
+    /**
+     * Browse a directory
+     * @param {string} path - Directory path to browse
+     * @returns {Promise<Object>} Directory information
+     */
+    async browseDirectory(path = '') {
+        try {
+            const response = await fetch(`${this.apiBaseUrl}/browse?path=${encodeURIComponent(path)}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            return await response.json();
+        } catch (error) {
+            throw new Error(`Failed to browse directory: ${error.message}`);
+        }
+    }
+
+    /**
+     * Search for files and directories
+     * @param {Object} searchRequest - Search criteria
+     * @returns {Promise<Array>} Search results
+     */
+    async searchFiles(searchRequest) {
+        try {
+            const response = await fetch(`${this.apiBaseUrl}/search`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(searchRequest)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            return await response.json();
+        } catch (error) {
+            throw new Error(`Search failed: ${error.message}`);
+        }
+    }
+
+    /**
+     * Download a file
+     * @param {string} filePath - Path to the file to download
+     * @returns {Promise<Blob>} File blob
+     */
+    async downloadFile(filePath) {
+        try {
+            const response = await fetch(`${this.apiBaseUrl}/download?path=${encodeURIComponent(filePath)}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            return await response.blob();
+        } catch (error) {
+            throw new Error(`Download failed: ${error.message}`);
+        }
+    }
+
+    /**
+     * Upload a file
+     * @param {File} file - File to upload
+     * @param {string} targetPath - Target directory path
+     * @returns {Promise<Object>} Upload result
+     */
+    async uploadFile(file, targetPath = '') {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const response = await fetch(`${this.apiBaseUrl}/upload?path=${encodeURIComponent(targetPath)}`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            return await response.json();
+        } catch (error) {
+            throw new Error(`Upload failed: ${error.message}`);
+        }
+    }
+
+    /**
+     * Get home directory information
+     * @returns {Promise<Object>} Home directory info
+     */
+    async getHomeDirectory() {
+        try {
+            const response = await fetch(`${this.apiBaseUrl}/home`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            return await response.json();
+        } catch (error) {
+            throw new Error(`Failed to get home directory: ${error.message}`);
+        }
+    }
+
+    /**
+     * Preview a file (download and return as text for text files)
+     * @param {string} filePath - Path to the file to preview
+     * @returns {Promise<Object>} File preview information
+     */
+    async previewFile(filePath) {
+        try {
+            const blob = await this.downloadFile(filePath);
+            const fileName = filePath.split('/').pop();
+            
+            // Check if it's a text file
+            const textExtensions = ['.txt', '.md', '.json', '.xml', '.html', '.css', '.js', '.cs', '.py', '.java', '.cpp', '.h', '.log'];
+            const extension = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
+            
+            if (textExtensions.includes(extension)) {
+                const text = await blob.text();
+                return {
+                    type: 'text',
+                    content: text,
+                    fileName: fileName,
+                    size: blob.size
+                };
+            } else {
+                return {
+                    type: 'binary',
+                    fileName: fileName,
+                    size: blob.size
+                };
+            }
+        } catch (error) {
+            throw new Error(`Preview failed: ${error.message}`);
+        }
+    }
+}

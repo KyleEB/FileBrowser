@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>File Browser</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="app">
+      <header class="header">
+        <div class="header-content">
+          <h1><i class="fas fa-folder-open"></i> File Browser</h1>
+          <div class="search-container">
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Search files..."
+              class="search-input"
+            />
+            <button id="searchBtn" class="search-btn">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <nav class="breadcrumb">
+        <div id="breadcrumbContainer" class="breadcrumb-container">
+          <span class="breadcrumb-item" data-path="">Home</span>
+        </div>
+      </nav>
+
+      <main class="main-content">
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <button id="uploadBtn" class="btn btn-primary">
+              <i class="fas fa-upload"></i> Upload File
+            </button>
+            <input type="file" id="fileInput" style="display: none" />
+          </div>
+          <div class="toolbar-right">
+            <div class="stats">
+              <span id="fileCount" class="stat-item">
+                <i class="fas fa-file"></i>
+                <span id="fileCountValue">0</span> files
+              </span>
+              <span id="folderCount" class="stat-item">
+                <i class="fas fa-folder"></i>
+                <span id="folderCountValue">0</span> folders
+              </span>
+              <span id="totalSize" class="stat-item">
+                <i class="fas fa-hdd"></i> <span id="totalSizeValue">0 B</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-area">
+          <div id="loadingIndicator" class="loading" style="display: none">
+            <i class="fas fa-spinner fa-spin"></i> Loading...
+          </div>
+
+          <div
+            id="errorMessage"
+            class="error-message"
+            style="display: none"
+          ></div>
+
+          <div id="searchResults" class="search-results" style="display: none">
+            <h3>Search Results</h3>
+            <div id="searchResultsList" class="file-list"></div>
+          </div>
+
+          <div id="fileList" class="file-list"></div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Modal for file preview -->
+    <div id="previewModal" class="modal" style="display: none">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modalTitle">File Preview</h3>
+          <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div id="modalContent"></div>
+        </div>
+        <div class="modal-footer">
+          <button id="downloadBtn" class="btn btn-primary">Download</button>
+          <button id="closeModalBtn" class="btn btn-secondary">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Service Layer -->
+    <script src="js/services/FileSystemService.js"></script>
+    <script src="js/services/UIService.js"></script>
+    <script src="js/services/NavigationService.js"></script>
+    <script src="js/services/EventService.js"></script>
+
+    <!-- Main Application -->
+    <script src="js/FileBrowser.js"></script>
+  </body>
+</html>

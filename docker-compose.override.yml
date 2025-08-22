@@ -1,0 +1,13 @@
+services:
+  filebrowser:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - "8080:80"
+    volumes:
+      - ./FileBrowser.Api:/app
+      - ./FileBrowser.Web/wwwroot:/app/wwwroot
+      - /app/bin
+      - /app/obj
+    command: dotnet watch run --urls http://+:80
