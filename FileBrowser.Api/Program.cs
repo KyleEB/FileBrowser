@@ -42,25 +42,17 @@ builder.Services.Configure<FormOptions>(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// Enable Swagger in both Development and Production
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
 
-// Serve static files (CSS, JS, images, etc.)
-app.UseStaticFiles();
-
 app.UseAuthorization();
 
 // Map API routes
 app.MapControllers();
-
-// Handle SPA routing - serve index.html for all non-API routes
-app.MapFallbackToFile("index.html");
 
 app.Run();

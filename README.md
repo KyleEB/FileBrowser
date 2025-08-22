@@ -205,25 +205,92 @@ dotnet test --collect:"XPlat Code Coverage"
 
 ## Docker Support
 
-The application includes Docker support with a simplified single-container setup:
+### Services
 
-### Quick Start
+#### Backend API Service (`filebrowser-api`)
+
+- **Port**: 5000
+- **URL**: `http://localhost:5000`
+- **Swagger**: `http://localhost:5000/swagger` (development only)
+- **Health Check**: `http://localhost:5000/health`
+- **API Endpoints**: `http://localhost:5000/api/filebrowser/*`
+
+#### Frontend Web Service (`filebrowser-web`)
+
+- **Port**: 8080
+- **URL**: `http://localhost:8080`
+- **Serves**: Static HTML, CSS, and JavaScript files
+
+### Running the Application
+
+#### Production Mode
 
 ```bash
-docker-compose up --build
+docker-compose up
 ```
 
-### Development Mode
+#### Development Mode (with hot reload)
 
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.override.yml up --build
+docker-compose -f docker-compose.yml -f docker-compose.override.yml up
 ```
 
-### Production Mode
+### Architecture Benefits
 
-```bash
-docker-compose -f docker-compose.yml up --build
-```
+1. **Separation of Concerns**: Frontend and backend are completely independent
+2. **Scalability**: Each service can be scaled independently
+3. **Development**: Easier to develop and debug each service separately
+4. **Deployment**: Can deploy frontend and backend to different environments
+5. **Technology Flexibility**: Can use different technologies for frontend and backend
+
+### Configuration
+
+#### Frontend Configuration
+
+The frontend configuration is in `FileBrowser.Web/wwwroot/js/config.js`:
+
+- API base URL is configurable for different environments
+- Application settings like max file size and supported text extensions
+
+#### Backend Configuration
+
+The backend configuration is in `FileBrowser.Api/appsettings.json`:
+
+- Database connections
+- File system settings
+- Environment-specific configurations
+
+### API Communication
+
+The frontend communicates with the backend via HTTP requests to `http://localhost:5000/api/filebrowser/*` endpoints.
+
+### Health Checks
+
+The API service includes health checks that verify the service is running properly. The frontend service waits for the API to be healthy before starting.
+
+### Volumes
+
+- `filebrowser-data`: Shared volume for file storage between API restarts
+- `./logs`: Host volume for application logs
+
+### Development Workflow
+
+1. **API Changes**: Modify files in `FileBrowser.Api/` - changes are reflected immediately in development mode
+2. **Frontend Changes**: Modify files in `FileBrowser.Web/wwwroot/` - changes are reflected immediately in development mode
+3. **Configuration Changes**: Modify `docker-compose.yml` or `docker-compose.override.yml` and restart containers
+
+### Troubleshooting
+
+#### Frontend can't connect to API
+
+- Ensure both services are running: `docker-compose ps`
+- Check API health: `http://localhost:5000/health`
+- Verify CORS settings in the API
+
+#### Port conflicts
+
+- Change ports in `docker-compose.yml` if 5000 or 8080 are already in use
+- Update the API URL in `FileBrowser.Web/wwwroot/js/config.js` if you change the API port
 
 ## Clean Architecture Principles
 

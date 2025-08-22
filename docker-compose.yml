@@ -1,12 +1,12 @@
 services:
-  # File Browser Application (API + Web Frontend)
-  filebrowser:
+  # File Browser API Backend
+  filebrowser-api:
     build:
       context: .
       dockerfile: FileBrowser.Api/Dockerfile
-    container_name: filebrowser
+    container_name: filebrowser-api
     ports:
-      - "8080:80"
+      - "5002:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - FileBrowser__HomeDirectory=/app/files
@@ -14,20 +14,18 @@ services:
       - filebrowser-data:/app/files
       - ./logs:/app/logs
     restart: unless-stopped
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--no-verbose",
-          "--tries=1",
-          "--spider",
-          "http://localhost/health",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+
+  # File Browser Web Frontend
+  filebrowser-web:
+    build:
+      context: .
+      dockerfile: FileBrowser.Web/Dockerfile
+    container_name: filebrowser-web
+    ports:
+      - "8080:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    restart: unless-stopped
 
 volumes:
   filebrowser-data:
