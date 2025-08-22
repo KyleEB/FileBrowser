@@ -135,7 +135,8 @@ class EventService {
         const path = $(e.currentTarget).data("path");
         const type = $(e.currentTarget).data("type");
 
-        if (type === "directory") {
+        // Use the model's properties for type checking
+        if (type === FileSystemItemType.Directory) {
           this.fileBrowser.navigateToPath(path);
         } else {
           this.fileBrowser.showFilePreview(path);
@@ -272,7 +273,8 @@ class EventService {
     menu.append(`<div class="context-menu-item">${fileName}</div>`);
     menu.append('<div class="context-menu-separator"></div>');
 
-    if (type === "file") {
+    // Use the model's enum for type checking
+    if (type === FileSystemItemType.File) {
       menu.append(
         '<div class="context-menu-item" data-action="download">Download</div>'
       );

@@ -71,14 +71,14 @@ class FileBrowser {
       this.uiService.showLoading();
       this.uiService.hideError();
 
-      const searchRequest = {
+      const searchRequest = new SearchRequest({
         query: query,
         path: this.navigationService.getCurrentPath(),
         includeSubdirectories: true,
         searchInFileNames: true,
         searchInFileContents: false,
         maxResults: 100,
-      };
+      });
 
       const results = await this.fileSystemService.searchFiles(searchRequest);
       this.displaySearchResults(results, query);
@@ -91,7 +91,7 @@ class FileBrowser {
 
   /**
    * Display directory information
-   * @param {Object} data - Directory data from API
+   * @param {DirectoryDetails} data - Directory data from API
    */
   displayDirectory(data) {
     if (!data.exists) {
@@ -110,7 +110,7 @@ class FileBrowser {
 
   /**
    * Display search results
-   * @param {Array} results - Search results
+   * @param {Array<FileSystemItem>} results - Search results
    * @param {string} query - Search query
    */
   displaySearchResults(results, query) {
@@ -161,7 +161,9 @@ class FileBrowser {
    * @param {Event} event - File input change event
    */
   async handleFileUpload(event) {
+    console.log("handleFileUpload called", event);
     const files = Array.from(event.target.files);
+    console.log("Files selected:", files);
     if (files.length === 0) return;
 
     // Validate file sizes

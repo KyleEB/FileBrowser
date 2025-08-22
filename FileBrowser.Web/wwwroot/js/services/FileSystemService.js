@@ -3,14 +3,13 @@
  */
 class FileSystemService {
   constructor() {
-    this.apiBaseUrl =
-      window.config?.api?.baseUrl || "http://localhost:5000/api/filebrowser";
+    this.apiBaseUrl = window.config?.api?.baseUrl;
   }
 
   /**
    * Browse a directory
    * @param {string} path - Directory path to browse
-   * @returns {Promise<Object>} Directory information
+   * @returns {Promise<DirectoryDetails>} Directory information
    */
   async browseDirectory(path = "") {
     try {
@@ -22,7 +21,8 @@ class FileSystemService {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      return await response.json();
+      const data = await response.json();
+      return DirectoryDetails.fromApiResponse(data);
     } catch (error) {
       throw new Error(`Failed to browse directory: ${error.message}`);
     }
@@ -30,8 +30,8 @@ class FileSystemService {
 
   /**
    * Search for files and directories
-   * @param {Object} searchRequest - Search criteria
-   * @returns {Promise<Array>} Search results
+   * @param {SearchRequest} searchRequest - Search criteria
+   * @returns {Promise<Array<FileSystemItem>>} Search results
    */
   async searchFiles(searchRequest) {
     try {
@@ -40,14 +40,15 @@ class FileSystemService {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(searchRequest),
+        body: JSON.stringify(searchRequest.toApiRequest()),
       });
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      return await response.json();
+      const data = await response.json();
+      return data.map((item) => FileSystemItem.fromApiResponse(item));
     } catch (error) {
       throw new Error(`Search failed: ${error.message}`);
     }
@@ -79,7 +80,7 @@ class FileSystemService {
    * @param {File} file - File to upload
    * @param {string} targetPath - Target directory path
    * @param {Function} onProgress - Progress callback function
-   * @returns {Promise<Object>} Upload result
+   * @returns {Promise<UploadResponse>} Upload result
    */
   async uploadFile(file, targetPath = "", onProgress = null) {
     try {
@@ -99,10 +100,10 @@ class FileSystemService {
         xhr.addEventListener("load", () => {
           if (xhr.status >= 200 && xhr.status < 300) {
             try {
-              const result = JSON.parse(xhr.responseText);
-              resolve(result);
+              const data = JSON.parse(xhr.responseText);
+              resolve(UploadResponse.fromApiResponse(data));
             } catch (error) {
-              resolve({ success: true, message: "Upload completed" });
+              resolve(UploadResponse.createSuccess("", 0));
             }
           } else {
             reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
@@ -126,7 +127,7 @@ class FileSystemService {
 
   /**
    * Get home directory information
-   * @returns {Promise<Object>} Home directory info
+   * @returns {Promise<HomeDirectoryResponse>} Home directory info
    */
   async getHomeDirectory() {
     try {
@@ -136,7 +137,8 @@ class FileSystemService {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      return await response.json();
+      const data = await response.json();
+      return HomeDirectoryResponse.fromApiResponse(data);
     } catch (error) {
       throw new Error(`Failed to get home directory: ${error.message}`);
     }

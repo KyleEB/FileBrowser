@@ -43,7 +43,7 @@ namespace FileBrowser.Api.Controllers
                     {
                         Name = item.Name,
                         Path = item.Path,
-                        Type = item.Type.ToString().ToLower(),
+                        Type = (Contracts.Models.FileSystemItemType)item.Type,
                         Size = item.Size,
                         LastModified = item.LastModified,
                         Extension = item.Extension
@@ -91,7 +91,7 @@ namespace FileBrowser.Api.Controllers
                 {
                     Name = item.Name,
                     Path = item.Path,
-                    Type = item.Type.ToString().ToLower(),
+                    Type = (Contracts.Models.FileSystemItemType)item.Type,
                     Size = item.Size,
                     LastModified = item.LastModified,
                     Extension = item.Extension

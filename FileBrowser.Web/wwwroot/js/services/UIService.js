@@ -207,8 +207,9 @@ class UIService {
    * @returns {string} HTML string
    */
   createFileItemHtml(item) {
-    const icon = item.type === "directory" ? "fa-folder" : "fa-file";
-    const iconClass = item.type === "directory" ? "folder" : "file";
+    // Use the model's properties for type checking
+    const icon = item.isDirectory ? "fa-folder" : "fa-file";
+    const iconClass = item.isDirectory ? "folder" : "file";
     const size = item.size ? this.formatFileSize(item.size) : "";
     const modified = item.lastModified
       ? new Date(item.lastModified).toLocaleDateString()
@@ -224,10 +225,9 @@ class UIService {
         ? `<div class="file-details">${details.join(" • ")}</div>`
         : "";
 
-    const actions =
-      item.type === "file"
-        ? `<button class="btn btn-primary download-btn" data-path="${item.path}">Download</button>`
-        : "";
+    const actions = item.isFile
+      ? `<button class="btn btn-primary download-btn" data-path="${item.path}">Download</button>`
+      : "";
 
     return `
             <div class="file-item" data-path="${item.path}" data-type="${
