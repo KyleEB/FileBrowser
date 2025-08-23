@@ -70,5 +70,12 @@ namespace FileBrowser.Domain.Repositories
         /// <param name="destinationPath">The destination path</param>
         /// <returns>Task representing the move operation</returns>
         Task MoveAsync(string sourcePath, string destinationPath);
+
+        /// <summary>
+        /// Deletes a file or directory
+        /// </summary>
+        /// <param name="path">The path to delete</param>
+        /// <returns>Task representing the delete operation</returns>
+        Task DeleteAsync(string path);
     }
 }

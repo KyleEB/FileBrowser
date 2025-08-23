@@ -161,9 +161,16 @@ class UIService {
   /**
    * Render file list
    * @param {Array} items - Array of file system items
+   * @param {string} currentPath - Current directory path
    */
-  renderFileList(items) {
+  renderFileList(items, currentPath = "") {
     this.elements.fileList.empty();
+
+    // Add parent directory item if we're in a subdirectory
+    if (currentPath && currentPath !== "") {
+      const parentItem = this.createParentDirectoryItem(currentPath);
+      this.elements.fileList.append(parentItem);
+    }
 
     if (items.length === 0) {
       this.elements.fileList.html(
@@ -230,9 +237,25 @@ class UIService {
         ? `<div class="file-details">${details.join(" • ")}</div>`
         : "";
 
-    const actions = item.isFile
-      ? `<button class="btn btn-primary download-btn" data-path="${item.path}">Download</button>`
-      : "";
+    const actions = [];
+
+    // Add download button for files
+    if (item.isFile) {
+      actions.push(
+        `<button class="btn btn-primary download-btn" data-path="${item.path}">Download</button>`
+      );
+    }
+
+    // Add delete button for all items (except parent directory)
+    actions.push(
+      `<button class="btn btn-danger delete-btn" data-path="${
+        item.path
+      }" data-name="${this.escapeHtml(item.name)}" data-type="${
+        item.type
+      }">Delete</button>`
+    );
+
+    const actionsHtml = actions.join("");
 
     return `
             <div class="file-item" data-path="${item.path}" data-type="${
@@ -246,7 +269,39 @@ class UIService {
                     ${detailsHtml}
                 </div>
                 <div class="file-actions">
-                    ${actions}
+                    ${actionsHtml}
+                </div>
+            </div>
+        `;
+  }
+
+  /**
+   * Create HTML for parent directory item
+   * @param {string} currentPath - Current directory path
+   * @returns {string} HTML string
+   */
+  createParentDirectoryItem(currentPath) {
+    // Calculate parent path
+    const pathParts = currentPath.split("/").filter((part) => part.length > 0);
+    const parentPath = pathParts.slice(0, -1).join("/");
+
+    console.log("Parent directory calculation:", {
+      currentPath,
+      pathParts,
+      parentPath,
+    });
+
+    return `
+            <div class="file-item parent-directory" data-path="${parentPath}" data-type="1" draggable="true" data-item-name="..">
+                <div class="file-icon folder">
+                    <i class="fas fa-level-up-alt"></i>
+                </div>
+                <div class="file-info">
+                    <div class="file-name">.. (Parent Directory)</div>
+                    <div class="file-details">Go to parent directory</div>
+                </div>
+                <div class="file-actions">
+                    <!-- No delete button for parent directory -->
                 </div>
             </div>
         `;

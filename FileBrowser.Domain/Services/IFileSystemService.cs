@@ -11,5 +11,6 @@ namespace FileBrowser.Domain.Services
         Task<HomeDirectoryResult> GetHomeDirectoryAsync();
         Task CreateDirectoryAsync(string directoryPath);
         Task MoveAsync(string sourcePath, string destinationPath);
+        Task DeleteAsync(string path);
     }
 }

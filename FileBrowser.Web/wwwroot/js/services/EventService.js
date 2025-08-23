@@ -16,6 +16,7 @@ class EventService {
     this.bindNavigationEvents();
     this.bindFileItemEvents();
     this.bindDownloadEvents();
+    this.bindDeleteEvents();
     this.bindNewFolderEvents();
     this.bindDragAndDropMoveEvents(); // Move this before file upload drag and drop
     this.bindDragAndDropEvents(); // Add this explicitly
@@ -114,6 +115,15 @@ class EventService {
       if (!$(e.target).hasClass("btn")) {
         const path = $(e.currentTarget).data("path");
         const type = $(e.currentTarget).data("type");
+        const isParentDirectory = $(e.currentTarget).hasClass(
+          "parent-directory"
+        );
+
+        // Handle parent directory navigation
+        if (isParentDirectory) {
+          this.fileBrowser.navigateToPath(path);
+          return;
+        }
 
         // Use the model's properties for type checking
         if (type === FileSystemItemType.Directory) {
@@ -142,6 +152,20 @@ class EventService {
       if (path) {
         this.fileBrowser.downloadFile(path);
       }
+    });
+  }
+
+  /**
+   * Bind delete events
+   */
+  bindDeleteEvents() {
+    // Delete button in file list
+    $(document).on("click", ".delete-btn", (e) => {
+      e.stopPropagation();
+      const path = $(e.currentTarget).data("path");
+      const name = $(e.currentTarget).data("name");
+      const type = $(e.currentTarget).data("type");
+      this.fileBrowser.deleteItem(path, name, type);
     });
   }
 

@@ -9,7 +9,7 @@ class FileSystemService {
   /**
    * Browse a directory
    * @param {string} path - Directory path to browse
-   * @returns {Promise<DirectoryDetails>} Directory information
+   * @returns {Promise<Object>} Directory information
    */
   async browseDirectory(path = "") {
     try {
@@ -22,7 +22,7 @@ class FileSystemService {
       }
 
       const data = await response.json();
-      return DirectoryDetails.fromApiResponse(data);
+      return DirectoryDetails.createDirectoryDetails(data);
     } catch (error) {
       throw new Error(`Failed to browse directory: ${error.message}`);
     }
@@ -30,17 +30,26 @@ class FileSystemService {
 
   /**
    * Search for files and directories
-   * @param {SearchRequest} searchRequest - Search criteria
-   * @returns {Promise<Array<FileSystemItem>>} Search results
+   * @param {Object} searchOptions - Search criteria
+   * @returns {Promise<Array<Object>>} Search results
    */
-  async searchFiles(searchRequest) {
+  async searchFiles(searchOptions) {
     try {
+      const request = {
+        query: searchOptions.query || "",
+        path: searchOptions.path || "",
+        includeSubdirectories: searchOptions.includeSubdirectories !== false,
+        searchInFileNames: searchOptions.searchInFileNames !== false,
+        searchInFileContents: searchOptions.searchInFileContents || false,
+        maxResults: searchOptions.maxResults || 100,
+      };
+
       const response = await fetch(`${this.apiBaseUrl}/search`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(searchRequest.toApiRequest()),
+        body: JSON.stringify(request),
       });
 
       if (!response.ok) {
@@ -48,7 +57,7 @@ class FileSystemService {
       }
 
       const data = await response.json();
-      return data.map((item) => FileSystemItem.fromApiResponse(item));
+      return data.map((item) => FileSystemItem.createFileSystemItem(item));
     } catch (error) {
       throw new Error(`Search failed: ${error.message}`);
     }
@@ -101,9 +110,9 @@ class FileSystemService {
           if (xhr.status >= 200 && xhr.status < 300) {
             try {
               const data = JSON.parse(xhr.responseText);
-              resolve(UploadResponse.fromApiResponse(data));
+              resolve(UploadResponse.createUploadResponse(data));
             } catch (error) {
-              resolve(UploadResponse.createSuccess("", 0));
+              resolve(UploadResponse.createUploadSuccess("", 0));
             }
           } else {
             reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
@@ -127,7 +136,7 @@ class FileSystemService {
 
   /**
    * Get home directory information
-   * @returns {Promise<HomeDirectoryResponse>} Home directory info
+   * @returns {Promise<Object>} Home directory info
    */
   async getHomeDirectory() {
     try {
@@ -138,7 +147,7 @@ class FileSystemService {
       }
 
       const data = await response.json();
-      return HomeDirectoryResponse.fromApiResponse(data);
+      return HomeDirectoryResponse.createHomeDirectoryResponse(data);
     } catch (error) {
       throw new Error(`Failed to get home directory: ${error.message}`);
     }
@@ -202,14 +211,17 @@ class FileSystemService {
    */
   async createDirectory(name, parentPath = "") {
     try {
-      const request = new CreateDirectoryRequest(name, parentPath);
+      const request = {
+        name: name,
+        parentPath: parentPath,
+      };
 
       const response = await fetch(`${this.apiBaseUrl}/create-directory`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(request.toApiRequest()),
+        body: JSON.stringify(request),
       });
 
       if (!response.ok) {
@@ -230,14 +242,17 @@ class FileSystemService {
    */
   async moveItem(sourcePath, destinationPath) {
     try {
-      const request = new MoveRequest(sourcePath, destinationPath);
+      const request = {
+        sourcePath: sourcePath,
+        destinationPath: destinationPath,
+      };
 
       const response = await fetch(`${this.apiBaseUrl}/move`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(request.toApiRequest()),
+        body: JSON.stringify(request),
       });
 
       if (!response.ok) {
@@ -247,6 +262,30 @@ class FileSystemService {
       return await response.json();
     } catch (error) {
       throw new Error(`Failed to move item: ${error.message}`);
+    }
+  }
+
+  /**
+   * Delete a file or directory
+   * @param {string} path - Path to the item to delete
+   * @returns {Promise<Object>} Delete result
+   */
+  async deleteItem(path) {
+    try {
+      const response = await fetch(
+        `${this.apiBaseUrl}/delete?path=${encodeURIComponent(path)}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw new Error(`Failed to delete item: ${error.message}`);
     }
   }
 }

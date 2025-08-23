@@ -238,5 +238,32 @@ namespace FileBrowser.Api.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
+        /// <summary>
+        /// Delete a file or directory
+        /// </summary>
+        /// <param name="path">Path to the item to delete</param>
+        /// <returns>Delete result</returns>
+        [HttpDelete("delete")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult> Delete([FromQuery] string path)
+        {
+            try
+            {
+                await _fileSystemService.DeleteAsync(path);
+                
+                return Ok(new { message = "Item deleted successfully" });
+            }
+            catch (FileNotFoundException)
+            {
+                return NotFound(new { error = "Item not found" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
     }
 }

@@ -336,6 +336,26 @@ body {
   cursor: grabbing;
 }
 
+/* Parent directory item styling */
+.file-item.parent-directory {
+  background: #f8f9fa;
+  border-left: 3px solid #007bff;
+}
+
+.file-item.parent-directory:hover {
+  background: #e3f2fd;
+}
+
+.file-item.parent-directory .file-icon {
+  background: #007bff;
+  color: white;
+}
+
+.file-item.parent-directory .file-name {
+  color: #007bff;
+  font-weight: 600;
+}
+
 /* Drag and drop help text */
 .drag-drop-help {
   text-align: center;
@@ -394,11 +414,31 @@ body {
 .file-actions {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .file-actions button {
   padding: 0.25rem 0.5rem;
   font-size: 0.8rem;
+}
+
+/* Delete button styling */
+.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
+/* File actions spacing */
+.file-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 /* Search Results */

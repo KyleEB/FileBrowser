@@ -232,6 +232,25 @@ namespace FileBrowser.Infrastructure.Repositories
             }
         }
 
+        public async Task DeleteAsync(string path)
+        {
+            var fullPath = GetFullPath(path);
+
+            if (!File.Exists(fullPath) && !Directory.Exists(fullPath))
+            {
+                throw new FileNotFoundException($"Path does not exist: {path}");
+            }
+
+            if (File.Exists(fullPath))
+            {
+                File.Delete(fullPath);
+            }
+            else if (Directory.Exists(fullPath))
+            {
+                Directory.Delete(fullPath, recursive: true);
+            }
+        }
+
         private void EnsureHomeDirectoryExists()
         {
             if (!Directory.Exists(_homeDirectory))

@@ -61,5 +61,10 @@ namespace FileBrowser.Infrastructure.Services
         {
             await _repository.MoveAsync(sourcePath, destinationPath);
         }
+
+        public async Task DeleteAsync(string path)
+        {
+            await _repository.DeleteAsync(path);
+        }
     }
 }

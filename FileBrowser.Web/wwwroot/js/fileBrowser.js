@@ -74,16 +74,16 @@ class FileBrowser {
       this.uiService.showLoading();
       this.uiService.hideError();
 
-      const searchRequest = new SearchRequest({
+      const searchOptions = {
         query: query,
         path: this.navigationService.getCurrentPath(),
         includeSubdirectories: true,
         searchInFileNames: true,
         searchInFileContents: false,
         maxResults: 100,
-      });
+      };
 
-      const results = await this.fileSystemService.searchFiles(searchRequest);
+      const results = await this.fileSystemService.searchFiles(searchOptions);
       this.displaySearchResults(results, query);
     } catch (error) {
       this.uiService.showError(error.message);
@@ -94,7 +94,7 @@ class FileBrowser {
 
   /**
    * Display directory information
-   * @param {DirectoryDetails} data - Directory data from API
+   * @param {Object} data - Directory data from API
    */
   displayDirectory(data) {
     if (!data.exists) {
@@ -108,12 +108,12 @@ class FileBrowser {
       data.directoryCount,
       data.totalSize
     );
-    this.uiService.renderFileList(data.items);
+    this.uiService.renderFileList(data.items, data.path);
   }
 
   /**
    * Display search results
-   * @param {Array<FileSystemItem>} results - Search results
+   * @param {Array<Object>} results - Search results
    * @param {string} query - Search query
    */
   displaySearchResults(results, query) {
@@ -320,6 +320,40 @@ class FileBrowser {
   }
 
   /**
+   * Delete a file or directory
+   * @param {string} path - Path to the item to delete
+   * @param {string} name - Name of the item to delete
+   * @param {number} type - Type of the item (FileSystemItemType.File or FileSystemItemType.Directory)
+   */
+  async deleteItem(path, name, type) {
+    const itemType = type === FileSystemItemType.Directory ? "Folder" : "File";
+    console.log("Deleting item:", { path, name, type });
+    const message =
+      type === FileSystemItemType.Directory
+        ? `Are you sure you want to delete the folder "${name}" and all its contents? This action cannot be undone.`
+        : `Are you sure you want to delete the file "${name}"? This action cannot be undone.`;
+
+    const confirmed = confirm(message);
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      this.uiService.showLoading();
+      await this.fileSystemService.deleteItem(path);
+
+      // Refresh the current directory
+      this.navigateToPath(this.navigationService.getCurrentPath());
+      this.uiService.showSuccess(`${itemType} "${name}" deleted successfully`);
+    } catch (error) {
+      console.error("Delete failed:", error);
+      this.uiService.showError(error.message);
+    } finally {
+      this.uiService.hideLoading();
+    }
+  }
+
+  /**
    * Create a new folder
    */
   async createNewFolder() {
@@ -442,7 +476,11 @@ class FileBrowser {
     event.dataTransfer.dropEffect = "move";
 
     const targetItem = event.target.closest(".file-item");
-    if (targetItem && targetItem.dataset.type === "1") {
+    if (
+      targetItem &&
+      (targetItem.dataset.type === "1" ||
+        targetItem.classList.contains("parent-directory"))
+    ) {
       targetItem.classList.add("drag-over");
     }
   }
@@ -466,7 +504,11 @@ class FileBrowser {
     event.preventDefault();
 
     const targetItem = event.target.closest(".file-item");
-    if (!targetItem || targetItem.dataset.type !== "1") {
+    if (
+      !targetItem ||
+      (targetItem.dataset.type !== "1" &&
+        !targetItem.classList.contains("parent-directory"))
+    ) {
       return;
     }
 
@@ -479,13 +521,25 @@ class FileBrowser {
       const targetPath = targetItem.dataset.path;
       const fileName = dragData.name;
 
-      // Calculate destination path
-      const destinationPath = targetPath + "/" + fileName;
+      // Calculate destination path - handle root directory case
+      const destinationPath =
+        targetPath === "" ? fileName : targetPath + "/" + fileName;
+
+      console.log("Move operation details:", {
+        sourcePath,
+        targetPath,
+        fileName,
+        destinationPath,
+        isParentDirectory: targetItem.classList.contains("parent-directory"),
+      });
+
+      // Get the display name for the confirmation dialog
+      const targetName = targetItem.classList.contains("parent-directory")
+        ? "Parent Directory"
+        : targetItem.dataset.itemName;
 
       // Confirm the move operation
-      const confirmed = confirm(
-        `Move "${fileName}" to "${targetItem.dataset.itemName}"?`
-      );
+      const confirmed = confirm(`Move "${fileName}" to "${targetName}"?`);
       if (!confirmed) {
         return;
       }
