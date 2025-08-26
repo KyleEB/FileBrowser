@@ -1,50 +1,64 @@
 namespace FileBrowser.Domain.Entities
 {
     /// <summary>
-    /// Represents a file or directory in the file system
+    /// Base abstract class representing an item in the file system
     /// </summary>
-    public class FileSystemItem
+    public abstract class FileSystemItem
     {
-        public string Name { get; private set; }
-        public string Path { get; private set; }
-        public FileSystemItemType Type { get; private set; }
-        public long? Size { get; private set; }
-        public DateTime? LastModified { get; private set; }
+        public string Name { get; protected set; }
+        public string Path { get; protected set; }
+        public DateTime? LastModified { get; protected set; }
+
+        protected FileSystemItem(string name, string path, DateTime? lastModified = null)
+        {
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Path = path ?? throw new ArgumentNullException(nameof(path));
+            LastModified = lastModified;
+        }
+
+        public abstract long? Size { get; }
+    }
+
+    /// <summary>
+    /// Represents a file in the file system
+    /// </summary>
+    public class FileItem : FileSystemItem
+    {
+        public long FileSize { get; private set; }
         public string? Extension { get; private set; }
 
-        public bool IsDirectory => Type == FileSystemItemType.Directory;
-        public bool IsFile => Type == FileSystemItemType.File;
+        public override long? Size => FileSize;
 
-        private FileSystemItem() { }
-
-        public static FileSystemItem CreateDirectory(string name, string path, DateTime? lastModified = null)
+        private FileItem(string name, string path, long size, DateTime? lastModified = null, string? extension = null)
+            : base(name, path, lastModified)
         {
-            return new FileSystemItem
-            {
-                Name = name ?? throw new ArgumentNullException(nameof(name)),
-                Path = path ?? throw new ArgumentNullException(nameof(path)),
-                Type = FileSystemItemType.Directory,
-                LastModified = lastModified
-            };
+            FileSize = size;
+            Extension = extension;
         }
 
-        public static FileSystemItem CreateFile(string name, string path, long size, DateTime? lastModified = null, string? extension = null)
+        public static FileItem Create(string name, string path, long size, DateTime? lastModified = null, string? extension = null)
         {
-            return new FileSystemItem
-            {
-                Name = name ?? throw new ArgumentNullException(nameof(name)),
-                Path = path ?? throw new ArgumentNullException(nameof(path)),
-                Type = FileSystemItemType.File,
-                Size = size,
-                LastModified = lastModified,
-                Extension = extension
-            };
+            return new FileItem(name, path, size, lastModified, extension);
         }
     }
 
-    public enum FileSystemItemType
+    /// <summary>
+    /// Represents a directory in the file system
+    /// </summary>
+    public class DirectoryItem : FileSystemItem
     {
-        File,
-        Directory
+        public override long? Size => null;
+
+        private DirectoryItem(string name, string path, DateTime? lastModified = null)
+            : base(name, path, lastModified)
+        {
+        }
+
+        public static DirectoryItem Create(string name, string path, DateTime? lastModified = null)
+        {
+            return new DirectoryItem(name, path, lastModified);
+        }
     }
+
+
 }

@@ -12,22 +12,16 @@ function createFileSystemItem(data = {}) {
   const item = {
     name: data.name || "",
     path: data.path || "",
-    type: data.type || FileSystemItemType.File,
+    isDirectory: data.isDirectory || false,
     size: data.size || null,
     lastModified: data.lastModified || null,
     extension: data.extension || null,
   };
 
   // Add computed properties
-  Object.defineProperty(item, "isDirectory", {
-    get: function () {
-      return this.type === FileSystemItemType.Directory;
-    },
-  });
-
   Object.defineProperty(item, "isFile", {
     get: function () {
-      return this.type === FileSystemItemType.File;
+      return !this.isDirectory;
     },
   });
 

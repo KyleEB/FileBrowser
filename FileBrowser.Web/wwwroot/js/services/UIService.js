@@ -250,16 +250,16 @@ class UIService {
     actions.push(
       `<button class="btn btn-danger delete-btn" data-path="${
         item.path
-      }" data-name="${this.escapeHtml(item.name)}" data-type="${
-        item.type
+      }" data-name="${this.escapeHtml(item.name)}" data-is-directory="${
+        item.isDirectory
       }">Delete</button>`
     );
 
     const actionsHtml = actions.join("");
 
     return `
-            <div class="file-item" data-path="${item.path}" data-type="${
-      item.type
+            <div class="file-item" data-path="${item.path}" data-is-directory="${
+      item.isDirectory
     }" draggable="true" data-item-name="${this.escapeHtml(item.name)}">
                 <div class="file-icon ${iconClass}">
                     <i class="fas ${icon}"></i>
@@ -292,7 +292,7 @@ class UIService {
     });
 
     return `
-            <div class="file-item parent-directory" data-path="${parentPath}" data-type="1" draggable="true" data-item-name="..">
+            <div class="file-item parent-directory" data-path="${parentPath}" data-is-directory="true" draggable="true" data-item-name="..">
                 <div class="file-icon folder">
                     <i class="fas fa-level-up-alt"></i>
                 </div>

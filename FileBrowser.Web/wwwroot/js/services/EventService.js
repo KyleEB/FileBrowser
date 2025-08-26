@@ -114,7 +114,7 @@ class EventService {
 
       if (!$(e.target).hasClass("btn")) {
         const path = $(e.currentTarget).data("path");
-        const type = $(e.currentTarget).data("type");
+        const isDirectory = $(e.currentTarget).data("is-directory");
         const isParentDirectory = $(e.currentTarget).hasClass(
           "parent-directory"
         );
@@ -126,7 +126,7 @@ class EventService {
         }
 
         // Use the model's properties for type checking
-        if (type === FileSystemItemType.Directory) {
+        if (isDirectory) {
           this.fileBrowser.navigateToPath(path);
         } else {
           this.fileBrowser.showFilePreview(path);
@@ -164,8 +164,8 @@ class EventService {
       e.stopPropagation();
       const path = $(e.currentTarget).data("path");
       const name = $(e.currentTarget).data("name");
-      const type = $(e.currentTarget).data("type");
-      this.fileBrowser.deleteItem(path, name, type);
+      const isDirectory = $(e.currentTarget).data("is-directory");
+      this.fileBrowser.deleteItem(path, name, isDirectory);
     });
   }
 
@@ -267,10 +267,10 @@ class EventService {
     $(document).on("contextmenu", ".file-item", (e) => {
       e.preventDefault();
       const path = $(e.currentTarget).data("path");
-      const type = $(e.currentTarget).data("type");
+      const isDirectory = $(e.currentTarget).data("is-directory");
 
       // Show context menu with options
-      this.showContextMenu(e, path, type);
+      this.showContextMenu(e, path, isDirectory);
     });
 
     // Hide context menu when clicking elsewhere
@@ -283,9 +283,9 @@ class EventService {
    * Show context menu for file items
    * @param {Event} e - Mouse event
    * @param {string} path - File path
-   * @param {string} type - File type
+   * @param {boolean} isDirectory - Whether the item is a directory
    */
-  showContextMenu(e, path, type) {
+  showContextMenu(e, path, isDirectory) {
     // Remove existing context menus
     $(".context-menu").remove();
 
@@ -295,8 +295,8 @@ class EventService {
     menu.append(`<div class="context-menu-item">${fileName}</div>`);
     menu.append('<div class="context-menu-separator"></div>');
 
-    // Use the model's enum for type checking
-    if (type === FileSystemItemType.File) {
+    // Use the model's properties for type checking
+    if (!isDirectory) {
       menu.append(
         '<div class="context-menu-item" data-action="download">Download</div>'
       );
@@ -327,7 +327,7 @@ class EventService {
     // Handle context menu clicks
     menu.on("click", ".context-menu-item", (e) => {
       const action = $(e.target).data("action");
-      this.handleContextMenuAction(action, path, type);
+      this.handleContextMenuAction(action, path, isDirectory);
       menu.remove();
     });
   }
@@ -336,9 +336,9 @@ class EventService {
    * Handle context menu actions
    * @param {string} action - Action to perform
    * @param {string} path - File path
-   * @param {string} type - File type
+   * @param {boolean} isDirectory - Whether the item is a directory
    */
-  handleContextMenuAction(action, path, type) {
+  handleContextMenuAction(action, path, isDirectory) {
     switch (action) {
       case "download":
         this.fileBrowser.downloadFile(path);

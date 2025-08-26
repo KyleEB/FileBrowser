@@ -199,7 +199,6 @@ temp/
 *.suo
 *.ntvs*
 *.njsproj
-*.sln
 *.sw?
 
 # Docker

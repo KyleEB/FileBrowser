@@ -22,9 +22,9 @@ namespace FileBrowser.Domain.Entities
             string? parentPath = null)
         {
             var itemsList = items?.ToList() ?? new List<FileSystemItem>();
-            var fileCount = itemsList.Count(item => item.IsFile);
-            var directoryCount = itemsList.Count(item => item.IsDirectory);
-            var totalSize = itemsList.Where(item => item.IsFile).Sum(item => item.Size ?? 0);
+            var fileCount = itemsList.Count(item => item is FileItem);
+            var directoryCount = itemsList.Count(item => item is DirectoryItem);
+            var totalSize = itemsList.OfType<FileItem>().Sum(item => item.Size ?? 0);
 
             return new DirectoryDetails
             {

@@ -47,7 +47,7 @@ namespace FileBrowser.Infrastructure.Repositories
                 // Get directories
                 foreach (var dir in directoryInfo.GetDirectories())
                 {
-                    items.Add(FileSystemItem.CreateDirectory(
+                    items.Add(DirectoryItem.Create(
                         dir.Name,
                         GetRelativePath(dir.FullName),
                         dir.LastWriteTime));
@@ -56,7 +56,7 @@ namespace FileBrowser.Infrastructure.Repositories
                 // Get files
                 foreach (var file in directoryInfo.GetFiles())
                 {
-                    items.Add(FileSystemItem.CreateFile(
+                    items.Add(FileItem.Create(
                         file.Name,
                         GetRelativePath(file.FullName),
                         file.Length,
@@ -65,7 +65,7 @@ namespace FileBrowser.Infrastructure.Repositories
                 }
 
                 // Sort: directories first, then files, both alphabetically
-                items = items.OrderBy(x => !x.IsDirectory).ThenBy(x => x.Name).ToList();
+                items = items.OrderBy(x => x is DirectoryItem ? 0 : 1).ThenBy(x => x.Name).ToList();
 
                 return Domain.Entities.DirectoryDetails.CreateExisting(path, items, parentPath);
             }
@@ -100,7 +100,7 @@ namespace FileBrowser.Infrastructure.Repositories
                     foreach (var file in files)
                     {
                         var fileInfo = new System.IO.FileInfo(file);
-                        results.Add(FileSystemItem.CreateFile(
+                        results.Add(FileItem.Create(
                             fileInfo.Name,
                             GetRelativePath(file),
                             fileInfo.Length,
@@ -125,12 +125,12 @@ namespace FileBrowser.Infrastructure.Repositories
                                 var fileInfo = new System.IO.FileInfo(file);
                                 if (!results.Any(r => r.Path == GetRelativePath(file)))
                                 {
-                                    results.Add(FileSystemItem.CreateFile(
-                                        fileInfo.Name,
-                                        GetRelativePath(file),
-                                        fileInfo.Length,
-                                        fileInfo.LastWriteTime,
-                                        fileInfo.Extension));
+                                                                    results.Add(FileItem.Create(
+                                    fileInfo.Name,
+                                    GetRelativePath(file),
+                                    fileInfo.Length,
+                                    fileInfo.LastWriteTime,
+                                    fileInfo.Extension));
                                 }
                             }
                         }

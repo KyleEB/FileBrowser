@@ -28,8 +28,8 @@ namespace FileBrowser.Api.Controllers
         /// <returns>Directory information</returns>
         [HttpGet("browse")]
         [ProducesResponseType(typeof(Contracts.Models.DirectoryDetails), 200)]
-        [ProducesResponseType(400)]
         [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
         public async Task<ActionResult<Contracts.Models.DirectoryDetails>> Browse([FromQuery] string? path)
         {
             try
@@ -43,10 +43,10 @@ namespace FileBrowser.Api.Controllers
                     {
                         Name = item.Name,
                         Path = item.Path,
-                        Type = (Contracts.Models.FileSystemItemType)item.Type,
+                        IsDirectory = item is Domain.Entities.DirectoryItem,
                         Size = item.Size,
                         LastModified = item.LastModified,
-                        Extension = item.Extension
+                        Extension = item is Domain.Entities.FileItem fileItem ? fileItem.Extension : null
                     }).ToList(),
                     FileCount = domainResult.FileCount,
                     DirectoryCount = domainResult.DirectoryCount,
@@ -60,7 +60,8 @@ namespace FileBrowser.Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                _logger.LogError(ex, "Error browsing directory for path: {Path}", path);
+                throw;
             }
         }
 
@@ -71,7 +72,7 @@ namespace FileBrowser.Api.Controllers
         /// <returns>Search results</returns>
         [HttpPost("search")]
         [ProducesResponseType(typeof(List<Contracts.Models.FileSystemItem>), 200)]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
         public async Task<ActionResult<List<Contracts.Models.FileSystemItem>>> Search([FromBody] Contracts.Models.SearchRequest request)
         {
             try
@@ -91,17 +92,18 @@ namespace FileBrowser.Api.Controllers
                 {
                     Name = item.Name,
                     Path = item.Path,
-                    Type = (Contracts.Models.FileSystemItemType)item.Type,
+                    IsDirectory = item is Domain.Entities.DirectoryItem,
                     Size = item.Size,
                     LastModified = item.LastModified,
-                    Extension = item.Extension
+                    Extension = item is Domain.Entities.FileItem fileItem ? fileItem.Extension : null
                 }).ToList();
                 
                 return Ok(contractResults);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                _logger.LogError(ex, "Error searching files with query: {Query}", request?.Query);
+                throw;
             }
         }
 
@@ -112,8 +114,8 @@ namespace FileBrowser.Api.Controllers
         /// <returns>File stream</returns>
         [HttpGet("download")]
         [ProducesResponseType(typeof(FileStreamResult), 200)]
-        [ProducesResponseType(400)]
         [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
         public async Task<IActionResult> Download([FromQuery] string path)
         {
             try
@@ -128,7 +130,8 @@ namespace FileBrowser.Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                _logger.LogError(ex, "Error downloading file: {Path}", path);
+                throw;
             }
         }
 
@@ -140,7 +143,7 @@ namespace FileBrowser.Api.Controllers
         /// <returns>Upload result</returns>
         [HttpPost("upload")]
         [ProducesResponseType(typeof(Contracts.Models.UploadResponse), 200)]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
         public async Task<ActionResult<Contracts.Models.UploadResponse>> Upload(IFormFile file, [FromQuery] string? path)
         {
             try
@@ -160,7 +163,8 @@ namespace FileBrowser.Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                _logger.LogError(ex, "Error uploading file: {FileName}", file?.FileName);
+                throw;
             }
         }
 
@@ -170,6 +174,7 @@ namespace FileBrowser.Api.Controllers
         /// <returns>Home directory information</returns>
         [HttpGet("home")]
         [ProducesResponseType(typeof(Contracts.Models.HomeDirectoryResponse), 200)]
+        [ProducesResponseType(500)]
         public async Task<ActionResult<Contracts.Models.HomeDirectoryResponse>> GetHomeDirectory()
         {
             try
@@ -187,7 +192,8 @@ namespace FileBrowser.Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                _logger.LogError(ex, "Error getting home directory");
+                throw;
             }
         }
 
@@ -198,7 +204,7 @@ namespace FileBrowser.Api.Controllers
         /// <returns>Creation result</returns>
         [HttpPost("create-directory")]
         [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
         public async Task<ActionResult> CreateDirectory([FromBody] Contracts.Models.CreateDirectoryRequest request)
         {
             try
@@ -213,7 +219,8 @@ namespace FileBrowser.Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                _logger.LogError(ex, "Error creating directory: {Name}", request?.Name);
+                throw;
             }
         }
 
@@ -224,7 +231,7 @@ namespace FileBrowser.Api.Controllers
         /// <returns>Move result</returns>
         [HttpPost("move")]
         [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
         public async Task<ActionResult> Move([FromBody] Contracts.Models.MoveRequest request)
         {
             try
@@ -235,7 +242,8 @@ namespace FileBrowser.Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                _logger.LogError(ex, "Error moving item from {SourcePath} to {DestinationPath}", request?.SourcePath, request?.DestinationPath);
+                throw;
             }
         }
 
@@ -246,8 +254,8 @@ namespace FileBrowser.Api.Controllers
         /// <returns>Delete result</returns>
         [HttpDelete("delete")]
         [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
         [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
         public async Task<ActionResult> Delete([FromQuery] string path)
         {
             try
@@ -262,7 +270,8 @@ namespace FileBrowser.Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = ex.Message });
+                _logger.LogError(ex, "Error deleting item: {Path}", path);
+                throw;
             }
         }
     }

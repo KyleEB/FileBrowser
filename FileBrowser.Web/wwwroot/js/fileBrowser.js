@@ -323,15 +323,14 @@ class FileBrowser {
    * Delete a file or directory
    * @param {string} path - Path to the item to delete
    * @param {string} name - Name of the item to delete
-   * @param {number} type - Type of the item (FileSystemItemType.File or FileSystemItemType.Directory)
+   * @param {boolean} isDirectory - Whether the item is a directory
    */
-  async deleteItem(path, name, type) {
-    const itemType = type === FileSystemItemType.Directory ? "Folder" : "File";
-    console.log("Deleting item:", { path, name, type });
-    const message =
-      type === FileSystemItemType.Directory
-        ? `Are you sure you want to delete the folder "${name}" and all its contents? This action cannot be undone.`
-        : `Are you sure you want to delete the file "${name}"? This action cannot be undone.`;
+  async deleteItem(path, name, isDirectory) {
+    const itemType = isDirectory ? "Folder" : "File";
+    console.log("Deleting item:", { path, name, isDirectory });
+    const message = isDirectory
+      ? `Are you sure you want to delete the folder "${name}" and all its contents? This action cannot be undone.`
+      : `Are you sure you want to delete the file "${name}"? This action cannot be undone.`;
 
     const confirmed = confirm(message);
     if (!confirmed) {
@@ -405,16 +404,16 @@ class FileBrowser {
 
     const path = fileItem.dataset.path;
     const name = fileItem.dataset.itemName;
-    const type = fileItem.dataset.type;
+    const isDirectory = fileItem.dataset.isDirectory === "true";
 
-    console.log("Dragging item:", { path, name, type });
+    console.log("Dragging item:", { path, name, isDirectory });
 
     event.dataTransfer.setData(
       "text/plain",
       JSON.stringify({
         path: path,
         name: name,
-        type: fileItem.dataset.type,
+        isDirectory: isDirectory,
       })
     );
 

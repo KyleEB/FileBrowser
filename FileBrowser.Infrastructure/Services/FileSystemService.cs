@@ -10,7 +10,7 @@ namespace FileBrowser.Infrastructure.Services
 
         public FileSystemService(IFileSystemRepository repository)
         {
-            _repository = repository;
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
         public async Task<DirectoryDetails> BrowseDirectoryAsync(string path)

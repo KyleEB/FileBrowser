@@ -10,8 +10,7 @@ namespace FileBrowser.Contracts.Models
         [Required]
         public string Path { get; set; } = string.Empty;
         
-        [Required]
-        public FileSystemItemType Type { get; set; }
+        public bool IsDirectory { get; set; }
         
         public long? Size { get; set; }
         
