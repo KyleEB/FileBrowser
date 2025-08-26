@@ -19,7 +19,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy.WithOrigins(
-                "http://localhost:8080"   // Docker Frontend instance
+                "http://localhost:8080",   // Frontend (Docker and local development)
+                "https://localhost:8081"   // Frontend HTTPS (local development)
               )
               .AllowAnyMethod()
               .AllowAnyHeader();

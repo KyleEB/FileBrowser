@@ -4,7 +4,7 @@
 const config = {
   // API Configuration
   api: {
-    baseUrl: "http://localhost:5002/api/filebrowser", // Development API URL
+    baseUrl: "http://localhost:5000/api/filebrowser", // API URL (same for Docker and local development)
   },
 
   // Application Settings

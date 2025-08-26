@@ -67,11 +67,6 @@ FileBrowser/
 │               ├── NavigationService.js
 │               └── EventService.js
 └── Tests/                        # Unit test projects
-    ├── FileBrowser.Domain.Tests/
-    │   └── Entities/
-    │       ├── FileSystemItemTests.cs
-    │       ├── DirectoryInfoTests.cs
-    │       └── SearchRequestTests.cs
     ├── FileBrowser.Infrastructure.Tests/
     │   └── Services/
     │       └── FileSystemServiceTests.cs
@@ -138,6 +133,20 @@ The application uses the following configuration in `appsettings.json`:
 
 ### Running the Application
 
+#### Option 1: Using Development Scripts (Recommended)
+
+**Windows:**
+```bash
+.\start-dev.ps1
+```
+
+**Linux/Mac:**
+```bash
+./start-dev.sh
+```
+
+#### Option 2: Manual Startup
+
 1. **Build the solution:**
 
    ```bash
@@ -151,7 +160,7 @@ The application uses the following configuration in `appsettings.json`:
    dotnet run
    ```
 
-3. **Run the Web project:**
+3. **In a new terminal, run the Web project:**
 
    ```bash
    cd FileBrowser.Web
@@ -159,8 +168,9 @@ The application uses the following configuration in `appsettings.json`:
    ```
 
 4. **Access the application:**
-   - Web Interface: http://localhost:5000
-   - API Documentation: http://localhost:5001/swagger
+   - Web Interface: http://localhost:8080
+   - API Documentation: http://localhost:5000/swagger
+   - Health Check: http://localhost:5000/health
 
 ### Running Tests
 
@@ -175,8 +185,6 @@ dotnet test
 #### Run Specific Test Projects
 
 ```bash
-# Domain tests
-dotnet test Tests/FileBrowser.Domain.Tests/
 
 # Infrastructure tests
 dotnet test Tests/FileBrowser.Infrastructure.Tests/
@@ -184,24 +192,6 @@ dotnet test Tests/FileBrowser.Infrastructure.Tests/
 # API tests
 dotnet test Tests/FileBrowser.Api.Tests/
 ```
-
-#### Run Tests with Coverage
-
-```bash
-dotnet test --collect:"XPlat Code Coverage"
-```
-
-#### Test Structure
-
-- **Domain Tests**: Test domain entities, business logic, and validation
-- **Infrastructure Tests**: Test service implementations with mocked dependencies
-- **API Tests**: Test controller actions with mocked services
-
-#### Test Dependencies
-
-- **NUnit**: Testing framework
-- **Moq**: Mocking framework for creating test doubles
-- **Fluent Assertions**: Readable assertion library for expressive tests
 
 ## Docker Support
 
